@@ -15,7 +15,7 @@ run.test<-function(model,items,individuals,seed,reps){
   #Cargar paquetes
   library(IRTpp)
   library(mirt)
-    = irtpp.model(model)
+  model    = irtpp.model(model)
   ret=NULL;
   #Simular el test
   tm = proc.time();
@@ -41,7 +41,7 @@ run.test<-function(model,items,individuals,seed,reps){
 
   #Estimar Individuos
   tm = proc.time();
-  ret$ltt.irtpp = mapply(function(x,y){individual.traits(dataset=x,model=model,itempars=y)},testArr$test,ret$est.irtpp.items,SIMPLIFY=F)
+  ret$ltt.irtpp = mapply(function(x,y){individual.traits(method="EAP",dataset=x,model=model,itempars=y)},testArr$test,ret$est.irtpp.items,SIMPLIFY=F)
   tm = proc.time()-tm;
   ret$time.irtpp.ltt <- tm[3];
 
@@ -68,10 +68,10 @@ run.test<-function(model,items,individuals,seed,reps){
   ret
 }
 
-mlist=c(     1,   2)
-itlist= c(10  ,  20,  10,  20,  50,  100,   50,  100,  200,  500,  200,   500,  750, 750)
-indlist=c(1000,2000,2000,4000,5000,10000,10000,20000,20000,40000,50000,100000,75000,100000)
-repslist =  c(200 ,200 ,200 ,200 ,100 ,100  ,50   ,50   ,50   ,50   ,30   ,10    ,1    ,1)
+mlist=c(     2,   3)
+itlist= c(20,  10,  20,  50,  100,   50,  100,  200,  500,  200,   500,  750, 750)
+indlist=c(2000,2000,4000,5000,10000,10000,20000,20000,40000,50000,100000,75000,100000)
+repslist =  c(200 ,200 ,200 ,100 ,100  ,50   ,50   ,50   ,50   ,30   ,10    ,1    ,1)
 lapply(mlist,function(cmod){
 mapply(function(it,idv,reps){
   filename=paste0(cmod,"PL",it,"x",idv,"r",reps,".RData")
