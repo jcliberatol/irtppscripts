@@ -1,13 +1,42 @@
 
-runtest<-function(model,items,individuals,seed,reps){
+#'run many test
+#'
+#'@param mlist is the model list to run all the test in size m
+#'@param itlist is the item list to be ran for each model ,size i
+#'@param indlist is the individual list to be ran with each item list element ,size i 
+#'@param seed is the seed to reproduce results.
+#'@reps is the reps matrix of size i * id 
+#'
+run.manytest<-(mlist,itlist,indlist,seed,repslist){
+##Parameter lists
+  mlist=c(     1,   2)
+  itlist= c(10  ,  20,  10,  20,  50,  100,   50,  100,  200,  500,  200,   500,  750, 750)
+  indlist=c(1000,2000,2000,4000,5000,10000,10000,20000,20000,40000,50000,100000,75000,100000)
+  repslist =  c(200 ,200 ,200 ,200 ,100 ,100  ,50   ,50   ,50   ,50   ,30   ,10    ,1    ,1)
+  lapply(mlist,function(cmod){
+  mapply(function(it,idv,reps){
+    filename=paste0(cmod,"PL",it,"x",idv,"r",reps,".RData")
+    print(paste("Working on :",filename));
+    gc()
+    tr=run.test(model=cmod,items=it,individuals=idv,seed=1,reps=reps);
+    save(filename,file=filename);
+    tr=NULL;
+    gc()    
+  }
+  ,itlist,indlist,repslist)})
+}
+
+gc()
+run.test<-function(model,items,individuals,seed,reps){
   #Cargar paquetes
   library(IRTpp)
   library(mirt)
-  model = irtpp.model(model)
+    = irtpp.model(model)
   ret=NULL;
   #Simular el test
   tm = proc.time();
   testArr = simulateTest(items=items,individuals=individuals,reps=reps,model=model,seed=seed,threshold=0.05)
+  ret$poblational.items = testArr$itempars;
   tm = proc.time()-tm;
   ret$time.simulation <- tm[3];
   
@@ -55,3 +84,7 @@ runtest<-function(model,items,individuals,seed,reps){
   ret
 }
 
+#
+test = runtest("2pl",100,10000,1,10)
+save(test,file="2PL100x10000.RData")
+gc(verbose=T)
