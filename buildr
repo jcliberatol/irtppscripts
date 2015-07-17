@@ -1,0 +1,6 @@
+#!/bin/bash
+rm -r IRTpp_1.0.tar.gz IRTpp.Rcheck
+R CMD build IRTpp
+#R CMD check IRTpp_1.0.tar.gz
+#cat IRTpp.Rcheck/00install.out
+Rscript test.R
