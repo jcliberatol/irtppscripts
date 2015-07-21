@@ -134,7 +134,7 @@ unit.namingfun<-function(lst){
 }
 
 
-models = c("2PL","3PL");
+models = c("3PL","2PL");
 items = c(10,20,50,100,200,500);
 individuals=c(1000,2000,5000,10000,20000,50000);
 reps = c(200,200,100,50,10,10);
