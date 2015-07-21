@@ -1,7 +1,11 @@
+library(IRTpp)
+library(mirt)
+
 
 #'unitary job, runs a single job, must be saved to a single RData file.
 run.test.unit<-function(arglist){
   model=arglist$model;items=arglist$items;individuals=arglist$individuals;seed=arglist$seed;
+  itempars=arglist$itempars;
   #obtener el modelo, items e individuos
   #cargar librerias
   library(IRTpp)
@@ -10,7 +14,7 @@ run.test.unit<-function(arglist){
   ret=NULL;
   #Simular el test.
   tm = proc.time();
-  testArr = simulateTest(items=items,individuals=individuals,reps=1,model=model,seed=seed,threshold=0.05)
+  testArr = simulateTest(items=items,individuals=individuals,reps=1,model=model,seed=seed,threshold=0.05,itempars=itempars)
   tm = proc.time()-tm;
   ret$time.simulation <- tm[3];
   
@@ -84,6 +88,8 @@ run.many.jobs<-function(filename,directory,reps,arglist,unitfun,redo=F){
       else{print("Skipping calculation")}
     }
     if(calculate) {
+      #reporiducble seed
+      arglist$seed=i;
       ret = unitfun(arglist);
       save(ret,file=rfilename);
       ret=NULL;
@@ -95,7 +101,7 @@ run.many.jobs<-function(filename,directory,reps,arglist,unitfun,redo=F){
 
 
 
-run.test.scheduler<-function(masterdir,masterarglist,reps,unitfun,redo=F,seed=1){
+run.test.scheduler<-function(masterdir,masterarglist,reps,unitfun,redo=F,seed=1,namingfun){
   #ensure that reps and masterarglist are same size.
   if(!length(masterarglist)==length(reps)){
     stop("hammertime")
@@ -103,13 +109,16 @@ run.test.scheduler<-function(masterdir,masterarglist,reps,unitfun,redo=F,seed=1)
   idx=1;
   for (lst in  masterarglist){
     #determine folder name
-    fname=do.call(paste,c(lst,list(sep="x")))
-    fname=paste0("d",fname)
-    finame=do.call(paste,c(lst,list(sep="x")))
-    finame=paste0("f",fname)
-    print(paste(fname," Has been created"));
-    path=paste0(masterdir,"/",fname);
+    
+    fname = namingfun(lst)
+    fname=paste0("d",fname,reps[[idx]])
+    #do.call(paste,c(lst,list(sep="x")))
+    finame=paste0("f",fname,reps[[idx]])
+    
+    path=paste0(masterdir,"/",fname);1
+    
     #create folder
+    print.sentence(path," is the path")
     dir.create(path = path)
     #fill with repetitions
     run.many.jobs(finame,path,reps[[idx]],lst,unitfun,redo)
@@ -119,7 +128,10 @@ run.test.scheduler<-function(masterdir,masterarglist,reps,unitfun,redo=F,seed=1)
 
 
 
-
+unit.namingfun<-function(lst){
+  lst=list(lst$model,lst$items,lst$individuals)
+  fname=do.call(paste,args=c(lst,sep="x"))
+}
 
 
 models = c("2PL","3PL");
@@ -131,14 +143,18 @@ size=length(models)*length(items)
 mstrlst = as.list(1:size)
 rps = as.list(1:size)
 seq=1;
+#generate the item parameter poblationally made
+itempars=lapply(items,function(x){simulateTest(model="3PL",items = x,individuals=1)})
+itempars=lapply(itempars,function(x)x$itempars);
+itempars
 for (i in models){
   for (j in 1:length(items)){
-    mstrlst[[seq]]<-list(model=i,items=items[[j]],individuals=individuals[[j]],seed=1)
+    mstrlst[[seq]]<-list(model=i,items=items[[j]],individuals=individuals[[j]],seed=1,itempars=itempars[[j]])
     rps[[seq]]<-reps[[j]]
     seq=seq+1;
   }
 }
 
 run.test.scheduler(masterdir="/home/mirt/irtpptest/dataoutput/",
-                   masterarglist=mstrlst,reps=rps,unitfun=run.test.unit,
+                   masterarglist=mstrlst,reps=rps,unitfun=run.test.unit,namingfun=unit.namingfun
 )
