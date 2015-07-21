@@ -1,51 +1,61 @@
+
 install.packages("ggplot2")
 
 
 ###First the reduce step and what we gotta get.
-dir = "/home/mirt/irtpptest/dataoutput/";
-subdir ="d2PLx100x1000050/"
+dir = "/home/liberato/irtpptest/dataoutput/";
+subdir ="d3PLx10x1000200/"
 path=paste0(dir,subdir)
 files=list.files(path = path);
+files
+
 dset.n=length(files);
 
-##Create the log arrays
-##times
 
-time.irtpp = NULL
-time.mirt = NULL
+
+##Create the arrays
+##times
+time.irtpp = NULL;
+time.mirt = NULL;
 time.irtpp.eap = NULL;
 time.mirt.eap = NULL;
 time.irtpp.map =NULL;
 time.mirt.map = NULL;
 
-##Estimations
+##Estimations are matrices lol !
 
 est.irtpp = NULL;
 est.mirt = NULL;
 
+##Loglikelihood
 
-file=paste0(path,files[[1]])
-obj=load(file =file ,verbose = T)
-obj<-get(obj)
-##The parsed content of a file.
-names(obj)
-### Tiempos lista.
-obj$time.irtpp
-obj$time.mirt
-obj$time.irtpp.ltt
-obj$time.mirt.ltt
-## Estimaciones lista de matrices.
-obj$est.irtpp.items
+ll.irtpp.eap =NULL;
+ll.irtpp.map =NULL;
+ll.mirt.eap =NULL;
+ll.mirt.map =NULL;
 
-obj$est.mirt.items
-
-## Loglik Lista.
-## irtppeap mirteap irtppmap mirtmap
-
-obj$loglik.irtpp
-obj$loglik.mirt
-
-
+for (i in 1:dset.n){
+  file = paste0(path,files[[i]]) 
+  obj=load(file =file ,verbose = T)
+  obj<-get(obj)
+  time.irtpp[[i]]<-obj$time.irtpp;
+  time.mirt[[i]]<-obj$time.mirt;
+  time.irtpp.eap[[i]]<-obj$time.irtpp.ltt;
+  time.mirt.eap[[i]]<-obj$time.mirt.ltt;
+  
+  est.irtpp[[i]]<-obj$est.irtpp.items;
+  est.mirt[[i]]<-obj$est.mirt.items;
+  
+  ll.irtpp.eap[[i]]<-obj$loglik.irtpp;
+  ll.mirt.eap[[i]]<-obj$loglik.mirt;
+  print.sentence("Irtpp ll : ",obj$loglik.irtpp,obj$seed)
+  
+  ret=NULL;
+  obj=NULL;
+}
+ll.irtpp.eap
+ll.mirt.eap
+time.mirt
 
 
 ## EAP LL
