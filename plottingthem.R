@@ -1,22 +1,35 @@
 ###First the reduce step and what we gotta get.
 dir = "/home/liberato/irtpptest/dataoutput/";
-dirs = list.dirs(dir)
-subdir ="d3PLx100x1000050/"
-path=paste0(dir,subdir)
-
-dirs[[2]]
-reduce.dir(dirs[[1]])
-dirs[[1]]
-getwd()
+reduce.all(dir)
 
 
-reduce.all<-function(path){
-  path=dir
-  dirs=list.dirs(dir)
+reduce.all<-function(path,verbose=T){
+  ##Create a directory if it doesnt exists to output the reduce files
+  out.dir = paste0(path,"/","reduced")
+  out.dir
+  if(!dir.exists(out.dir)){
+    dir.create(out.dir)
+  }
+  ##Directories to reduce
+  dirs=list.dirs(path)
+  dirnames = list.dirs(path,full.names=F)
+  dirs.n = length(dirs)
+  for (i in 1:dirs.n){
+    ret=NULL;
+    ret = reduce.dir(dirs[[2]],verbose)
+    ##Save if proper
+    if(!is.null(ret$speedup)){
+      rfilename = paste0(path,dirnames[[i]],".RData") 
+      save(ret,file=rfilename);
+    }
+    #Not proper
+    else{if(verbose){print(paste0("Directory : ",dirs[[i]]," is not a proper directory"))}}
+    ret=NULL;
+  }
   
 }
-path = "/home/liberato/irtpptest/dataoutput/d3PLx100x1000050/"
-path = "/home/liberato/irtpptest/dataoutput/"
+
+
 reduce.dir(path)
 
 reduce.dir<-function(path,verbose=T){
@@ -67,6 +80,12 @@ reduce.dir<-function(path,verbose=T){
     obj<-get(obj)
     #names(obj)
     #times
+    if(is.null(obj$time.irtpp)){
+      if(verbose){
+        print(paste0("Skipping file ",file," Because it is not a test file"))
+      }  
+      break;
+    }
     time.irtpp[[i]]<-obj$time.irtpp;
     time.mirt[[i]]<-obj$time.mirt;
     time.irtpp.eap[[i]]<-obj$time.irtpp.ltt;

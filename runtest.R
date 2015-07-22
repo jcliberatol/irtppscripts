@@ -8,7 +8,7 @@ run.test.unit<-function(arglist){
   model=arglist$model;items=arglist$items;individuals=arglist$individuals;seed=arglist$seed;
   itempars=arglist$itempars;
   #obtener el modelo, items e individuos
-  #cargar librerias
+  #cargar libreriashh
   library(IRTpp)
   library(mirt)
   model = irtpp.model(model)
@@ -171,9 +171,9 @@ unit.namingfun<-function(lst){
 
 
 models = c("3PL","2PL");
-items = c(10,20,50,100,200,500);
+items =     c(10,  20,  50,  100,  200,  500);
 individuals=c(1000,2000,5000,10000,20000,50000);
-reps = c(200,200,100,50,10,10);
+reps =      c(200, 200, 100, 50,   10,   10);
 mstrlst = NULL
 size=length(models)*length(items)
 mstrlst = as.list(1:size)
