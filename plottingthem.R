@@ -1,12 +1,46 @@
+
+#Now parse the reduce directory to extract the reductions
+#dir = "/home/liberato/irtpptest/dataoutput/reduced/";
+#k=report.from.reduced(dir)
+
+
+
+
+report.from.reduced<-function(path){
+  files=list.files(dir)
+  all=NULL;
+  dset.n = length(files)
+  #i=1
+  for(i in 1:dset.n){
+    ret=NULL;
+    file = paste0(path,"/",files[[i]])
+    print(file)
+    obj = load(file = file)
+    obj <- get(obj)
+    if(is.null(obj$speedup)){
+      break;
+    }
+    all$speedup[[i]] = obj$speedup
+    all$ll.max[[i]] = list(obj$ll.max)
+    all$ll.mean[[i]] = obj$ll.mean
+    all$dif.min[[i]] = obj$dif.min
+    all$mean.dif.irtpp[[i]] = obj$mean.dif.irtpp
+    all$mean.dif.mirt[[i]] = obj$mean.dif.mirt
+    obj = NULL;
+    gc();
+  }
+  all
+}
+
+
 ###First the reduce step and what we gotta get.
-dir = "/home/liberato/irtpptest/dataoutput/";
-reduce.all(dir)
+#dir = "/home/liberato/irtpptest/dataoutput/";
+#reduce.all(dir)
 
 
 reduce.all<-function(path,verbose=T){
   ##Create a directory if it doesnt exists to output the reduce files
   out.dir = paste0(path,"/","reduced")
-  out.dir
   if(!dir.exists(out.dir)){
     dir.create(out.dir)
   }
@@ -19,7 +53,7 @@ reduce.all<-function(path,verbose=T){
     ret = reduce.dir(dirs[[2]],verbose)
     ##Save if proper
     if(!is.null(ret$speedup)){
-      rfilename = paste0(path,dirnames[[i]],".RData") 
+      rfilename = paste0(out.dir,"/",dirnames[[i]],".RData") 
       save(ret,file=rfilename);
     }
     #Not proper
@@ -28,10 +62,6 @@ reduce.all<-function(path,verbose=T){
   }
   
 }
-
-
-reduce.dir(path)
-
 reduce.dir<-function(path,verbose=T){
   path=paste0(path,"/")
   ## List the files
