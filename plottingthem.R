@@ -1,9 +1,13 @@
 
 #Now parse the reduce directory to extract the reductions
-#dir = "/home/liberato/irtpptest/dataoutput/reduced/";
-#k=report.from.reduced(dir)
+require(IRTpp)
+dir = "/home/liberato/irtpptest/dataoutput/reduced/";
+reduce.all(path="/home/liberato/irtpptest/dataoutput/")
 
-
+k=report.from.reduced(dir)
+k$dataset
+k$speedup
+lapply(k$speedup,unlist)
 
 
 report.from.reduced<-function(path){
@@ -26,6 +30,7 @@ report.from.reduced<-function(path){
     all$dif.min[[i]] = obj$dif.min
     all$mean.dif.irtpp[[i]] = obj$mean.dif.irtpp
     all$mean.dif.mirt[[i]] = obj$mean.dif.mirt
+    all$dataset[[i]] = files[[i]]
     obj = NULL;
     gc();
   }
@@ -34,8 +39,8 @@ report.from.reduced<-function(path){
 
 
 ###First the reduce step and what we gotta get.
-#dir = "/home/liberato/irtpptest/dataoutput/";
-#reduce.all(dir)
+path = "/home/liberato/irtpptest/dataoutput/";
+reduce.all(path)
 
 
 reduce.all<-function(path,verbose=T){
@@ -48,10 +53,16 @@ reduce.all<-function(path,verbose=T){
   dirs=list.dirs(path)
   dirnames = list.dirs(path,full.names=F)
   dirs.n = length(dirs)
+  #i=2
   for (i in 1:dirs.n){
     ret=NULL;
-    ret = reduce.dir(dirs[[2]],verbose)
+    print.sentence("Reducing directory : ",dirs[[i]])
+    ret = reduce.dir(dirs[[i]],verbose)
     ##Save if proper
+    if(is.character(ret)){
+      print("Skipping directory")
+      next;
+    }
     if(!is.null(ret$speedup)){
       rfilename = paste0(out.dir,"/",dirnames[[i]],".RData") 
       save(ret,file=rfilename);
@@ -85,6 +96,7 @@ reduce.dir<-function(path,verbose=T){
   ll.mirt.map =NULL;
   est.poblational = NULL;
   ##Extraction
+  #One for the while
   i=1
   while(i<=dset.n){
     file = paste0(path,files[[i]])
@@ -117,7 +129,9 @@ reduce.dir<-function(path,verbose=T){
       break;
     }
     time.irtpp[[i]]<-obj$time.irtpp;
-    time.mirt[[i]]<-obj$time.mirt;
+    time.mirt[[i]]<-obj$time.mirt; 
+    
+    #print.sentence(obj$time.mirt," : ",obj$time.irtpp)
     time.irtpp.eap[[i]]<-obj$time.irtpp.ltt;
     time.mirt.eap[[i]]<-obj$time.mirt.ltt;
     time.irtpp.map[[i]]<-obj$time.irtpp.map;
@@ -140,6 +154,10 @@ reduce.dir<-function(path,verbose=T){
   ##times speedup media
   if(!is.null(time.mirt)){
   
+  speedup.deviations = c(sd(time.mirt),sd(time.irtpp),sd(time.mirt.eap),sd(time.mirt.map),sd(time.irtpp.eap),sd(time.irtpp.map))
+  names(speedup.deviations)<-c("mirt","irtpp","m-eap","m-map","i-eap","i-map");
+  time.means = list(time.mirt,time.irtpp,time.mirt.eap,time.mirt.map,time.irtpp.eap,time.irtpp.map)
+  names(time.means)<-c("mirt","irtpp","m-eap","m-map","i-eap","i-map");
   speedup.zita = time.mirt/time.irtpp
   speedup.eap = time.mirt.eap/time.irtpp.eap
   speedup.map = time.mirt.map/time.irtpp.map
@@ -147,6 +165,7 @@ reduce.dir<-function(path,verbose=T){
   speedup = lapply(speedup,mean)
   speedup = as.list(speedup)
   names(speedup) <- c("estimation","eap","map")
+  speedup$deviations = speedup.deviations
   ret$speedup=speedup;
   
   
