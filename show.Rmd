@@ -1,0 +1,390 @@
+Comparacion de los paquetes IRTpp y MIRT para modelos unidimensionales
+========================================================
+
+Se compararon los paquetes **IRTpp** y **MIRT**, usando los valores por defecto de cada paquete, algunos de los parametros son :
+
+#### IRTpp
+* epsilon de convergencia : 0.00002
+* Iteraciones maximas BFGS : 15
+* Valores Iniciales : Metodo de Andrade
+
+#### MIRT
+* epsilon de convergencia : 0.00001
+* Iteraciones BFGS : Algoritmo adaptativo
+* Valores Iniciales : MIRT
+
+
+## Escenarios de pruebas
+
+Los siguientes escenarios de pruebas fueron considerados :
+```{r echo=FALSE, results='hide',message=FALSE}
+require(IRTpp)
+require(ggplot2)
+setwd("/home/liberato/irtpptest/dataoutput/")
+load("analysis.RData")
+```
+```{r echo=FALSE}
+analysis$speedup[,1:3]
+```
+
+## Speedup y Tiempos
+
+#### Tabla de speedups
+```{r echo=FALSE}
+analysis$speedup
+```
+
+#### Speedup en la estimacion
+
+*Bajo la linea MIRT es mas rapido que IRTpp*
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$speedup),ncol=length(colnames(analysis$speedup))))
+colnames(df)<-colnames(analysis$speedup)
+df[, c(2:6)] <- sapply(df[, c(2:6)],function(x)as.numeric(as.character(x)))
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=dataset.individuals,y=Estimacion,data=df,color=dataset.models,geom=c("point","smooth"))
+p+geom_abline(intercept=1,slope=0)
+```
+
+#### Speedup en EAP
+*Bajo la linea MIRT es mas rapido que IRTpp*
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$speedup),ncol=length(colnames(analysis$speedup))))
+colnames(df)<-colnames(analysis$speedup)
+df[, c(2:6)] <- sapply(df[, c(2:6)],function(x)as.numeric(as.character(x)))
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=dataset.individuals,y=EAP,data=df,color=dataset.models,geom=c("point","smooth"))
+p+geom_abline(intercept=1,slope=0)
+```
+
+#### Speedup en MAP
+*Bajo la linea MIRT es mas rapido que IRTpp , en este caso la linea no alcanza a ser vista*
+
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$speedup),ncol=length(colnames(analysis$speedup))))
+colnames(df)<-colnames(analysis$speedup)
+df[, c(2:6)] <- sapply(df[, c(2:6)],function(x)as.numeric(as.character(x)))
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=dataset.individuals,y=MAP,data=df,color=dataset.models,geom=c("point","smooth"))
+p+geom_abline(intercept=1,slope=0)
+```
+
+## Tiempos
+
+#### Tabla de tiempos
+
+```{r echo=FALSE}
+analysis$times
+```
+
+#### MIRT vs IRTpp , tiempos de estimacion
+
+*Bajo la linea IRTpp tuvo un tiempo mas bajo que MIRT*
+
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$times),ncol=length(colnames(analysis$times))))
+colnames(df)<-colnames(analysis$times)
+df[, c(3:9)] <- sapply(df[, c(3:9)],function(x)as.numeric(as.character(x)))
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=mirt,y=irtpp,data=df,color=dataset.models,shape=dataset.items,geom=c("point","smooth"),size=5)
+p+geom_abline(intercept=0,slope=1)
+```
+
+
+#### MIRT vs IRTpp , tiempos de EAP
+
+*Bajo la linea IRTpp tuvo un tiempo mas bajo que MIRT*
+
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$times),ncol=length(colnames(analysis$times))))
+colnames(df)<-colnames(analysis$times)
+df[, c(3:9)] <- sapply(df[, c(3:9)],function(x)as.numeric(as.character(x)))
+colnames(df)<-c(colnames(df[,1:5]),"meap","mmap","ieap","imap")
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=meap,y=ieap,data=df,color=dataset.models,shape=dataset.items,geom=c("point","smooth"),size=5)
+p+geom_abline(intercept=0,slope=1)
+```
+
+
+#### MIRT vs IRTpp , tiempos de MAP
+
+*Bajo la linea IRTpp tuvo un tiempo mas bajo que MIRT*
+
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$times),ncol=length(colnames(analysis$times))))
+colnames(df)<-colnames(analysis$times)
+df[, c(3:9)] <- sapply(df[, c(3:9)],function(x)as.numeric(as.character(x)))
+colnames(df)<-c(colnames(df[,1:5]),"meap","mmap","ieap","imap")
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=mmap,y=imap,data=df,color=dataset.models,shape=dataset.items,geom=c("point","smooth"),size=5)
+p+geom_abline(intercept=0,slope=1)
+```
+
+##Log verosimilitudes
+
+#### Tabla de logverosimilitudes 
+
+*Mas negativos se considera mejor (minimizando)*
+
+*La ultimas columnas indican la proporcion de los que fueron minimos en el conjunto de experimentos*
+
+```{r echo=FALSE}
+analysis$ll
+```
+
+#### Log verosimilitud , metodo EAP
+
+*Sobre la linea indica que IRTpp tuvo una menor logverosimilitud que MIRT*
+
+
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$ll),ncol=length(colnames(analysis$ll))))
+colnames(df)<-colnames(analysis$ll)
+df[, c(2:9)] <- sapply(df[, c(2:9)],function(x)as.numeric(as.character(x)))
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=df,color=dataset.models)
+p+geom_abline(intercept=0,slope=1)
+```
+
+
+#### Log verosimilitud , metodo MAP
+
+*Sobre la linea indica que IRTpp tuvo una menor logverosimilitud que MIRT*
+
+
+```{r echo=FALSE, results='hide',message=FALSE}
+df = data.frame(matrix(unlist(analysis$ll),ncol=length(colnames(analysis$ll))))
+colnames(df)<-colnames(analysis$ll)
+df[, c(2:9)] <- sapply(df[, c(2:9)],function(x)as.numeric(as.character(x)))
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=df,color=dataset.models)
+p+geom_abline(intercept=0,slope=1)
+```
+
+
+## Cercania a parametros poblacionales
+
+A continuacion se detalla como se acercaron los parametros estimados a los parametros poblacionales
+
+```{r echo=FALSE}
+analysis$est.better
+analysis$est.better.count
+analysis$mean.dif.irtpp
+analysis$mean.dif.mirt
+```
+
+
+```{r echo=FALSE, results='hide',message=FALSE}
+setwd("/home/liberato/irtpptest/dataoutput/")
+ll.all = load("logliks.RData")
+
+ll.all <- get(ll.all)
+ll.names = names(ll.all[[1]])
+
+ll.all=lapply(ll.all,function(x){matrix(unlist(x),ncol=4)})
+```
+
+## Todas las logverosimilitudes EAP
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[1]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[2]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[3]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[4]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[5]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[6]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[7]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[8]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[9]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[10]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[11]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[12]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+
+
+## Todas las logverosimilitudes MAP
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[1]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[2]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[3]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[4]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[5]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[6]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[7]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[8]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[9]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[10]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[11]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
+```{r echo=FALSE,,message=FALSE, warning=FALSE}
+
+  ll.frame=data.frame(ll.all[[12]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.map,y=ll.mirt.map,data=ll.frame,geom=c("point","smooth"))
+  p+geom_abline(intercept=0,slope=1)
+
+```
