@@ -8,6 +8,7 @@ scenario.insert <- function(scenarios,connection=mongo,db="test",collection="sce
   scenarios=cbind.data.frame(scenarios,s_status)
   scenarios$s_function = as.character(scenarios$s_function)
   scenarios$s_status = as.character(scenarios$s_status)
+  scenarios$s_rand = runif(nrow(scenarios))
   s_count = 0
   scenarios = cbind.data.frame(scenarios,s_count)
   
@@ -22,7 +23,6 @@ scenario.insert <- function(scenarios,connection=mongo,db="test",collection="sce
 }
 
 
-
 scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenarios",out.collection="out"){
   ###Search for not ran scenarios
   repeat{
@@ -30,7 +30,14 @@ scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenari
   scenario_c = paste0(db,".",scenario.collection)
   out_c = paste0(db,".",out.collection)
   query=mongo.bson.from.list(list("s_status"="notrun"))
-  element=mongo.findOne(connection,scenario_c,query);
+  rn=runif(1)
+  query1 = paste0('{"s_status" : "notrun", "s_rand" : { "$gte" : ',rn,' }}')
+  query2 = paste0('{"s_status" : "notrun", "s_rand" : { "$lte" : ',rn,' }}')
+  element = mongo.findOne(connection,scenario_c,query1)
+  if (is.null(element)){
+    element = mongo.findOne(connection,scenario_c,query2)
+  }
+  
   if(is.null(element)){
     print("I'm done")
     break

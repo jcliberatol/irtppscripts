@@ -1,17 +1,126 @@
 
 #Now parse the reduce directory to extract the reductions
+
+path = "/home/liberato/irtpptest/dataoutput/";
+analysis = analyse.tests(path)
+save(analysis,file=paste0(dir,"analysis.RData"))
+ll.all = load("logliks.RData")
+
+ll.all <- get(ll.all)
+ll.names = names(ll.all[[1]])
+
+ll.all=lapply(ll.all,function(x){matrix(unlist(x),ncol=4)})
+length(ll.all)
+#ll.all=do.call(what=rbind,ll.all)
+for (i in 1:12){
+  ll.frame=data.frame(ll.all[[i]])  
+  colnames(ll.frame)=ll.names
+  p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.frame)
+  p+geom_abline(intercept=0,slope=1)
+}
+ll.all=data.frame(ll.all)
+colnames(ll.all)=ll.names
+ll.names
+p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=ll.all)
+p+geom_abline(intercept=0,slope=1)
+
+p=qplot(x=log(ll.irtpp.map),y=log(ll.mirt.map),data=ll.all)
+p+geom_abline(intercept=0,slope=1)
+
 require(IRTpp)
-dir = "/home/liberato/irtpptest/dataoutput/reduced/";
-reduce.all(path="/home/liberato/irtpptest/dataoutput/")
+require(ggplot2)
+setwd("/home/liberato/irtpptest/dataoutput/")
+load("analysis.RData")
 
-k=report.from.reduced(dir)
-k$dataset
-k$speedup
-lapply(k$speedup,unlist)
+analysis$est.better
+analysis$est.better.count
+analysis$mean.dif.irtpp
+analysis$mean.dif.mirt
 
+analysis$ll
+#make dataframe
+df = data.frame(matrix(unlist(analysis$ll),ncol=length(nm)))
+colnames(df)<-colnames(analysis$ll)
+df[, c(2:9)] <- sapply(df[, c(2:9)],function(x)as.numeric(as.character(x)))
+p=qplot(x=ll.irtpp.eap,y=ll.mirt.eap,data=df,color=dataset.models)
+p+geom_abline(intercept=0,slope=1)
+
+df = data.frame(matrix(unlist(analysis$times),ncol=length(colnames(analysis$times))))
+colnames(df)<-colnames(analysis$times)
+df[, c(3:6)] <- sapply(df[, c(3:6)],function(x)as.numeric(as.character(x)))
+p=qplot(x=mirt,y=irtpp,data=df,color=dataset.models,size=dataset.items)
+p+geom_abline(intercept=0,slope=1)
+colnames(df)<-c(colnames(df[,1:5]),"meap","mmap","ieap","imap")
+
+
+
+analyse.tests<-function(path){
+reduce.all(path)
+rpath=paste0(path,"/reduced/")
+k=report.from.reduced(rpath)
+allliks = k$ll.all
+save(allliks,file="logliks.RData")
+dataset.names=t(matrix(unlist(lapply(k$dataset,function(x)unlist(strsplit(x,"x")))),nrow=3))
+dataset.sizes=as.numeric(dataset.names[,2])
+rms = nchar(as.character(dataset.sizes))+3
+rps=lapply(dataset.names[,3],function(x)strsplit(x,".RData")[[1]])
+dataset.reps=as.numeric(mapply(function(x,y)substr(x,y,13),rps,rms))
+lapply(dataset.names[,3],nchar)
+dataset.names=dataset.names[,1]
+#dataset sizes, reppetittions and names are now available
+dataset.items=dataset.sizes
+dataset.models=lapply(dataset.names,function(x)substr(x,2,5))
+dataset.individuals=dataset.sizes*100
+##Compose the tables
+tab=NULL
+###Pass all the loglikelihoods
+tab$ll.all = k$ll.all
+### Speedup table
+
+tab$speedup=t(matrix(unlist(lapply(k$speedup,function(x){c(x$estimation,x$eap,x$map)})),nrow=3))
+colnames(tab$speedup)<-c("Estimacion","EAP","MAP")
+tab$speedup=cbind(dataset.models,dataset.items,dataset.individuals,tab$speedup)
+
+###Times table
+
+tab$times = lapply(k$speedup,function(x){unlist(x$time.means)})
+times.names=names(tab$times[[1]])
+tab$times=t(matrix(unlist(tab$times),nrow=6))
+colnames(tab$times)<-times.names
+tab$times=cbind(dataset.models,dataset.items,dataset.individuals,tab$times)
+
+###Loglikelihood tables
+
+tab$ll=t(matrix(unlist(lapply(k$ll.mean,unlist)),nrow=4))
+colnames(tab$ll)<-names(unlist(k$ll.mean[[1]]))
+tab$ll = cbind(dataset.models,dataset.items,dataset.individuals,tab$ll)
+winn=t(matrix(unlist(lapply(lapply(k$ll.max,function(x)x[[1]]),function(x){c(x[1],x[2])})),nrow=2))
+winn[is.na(winn)] <- 0
+colnames(winn)<-c("w.irtpp","w.mirt")
+tab$ll = cbind(tab$ll,winn)
+
+###Difference tables
+#Tabla de cual de los paquetes estuvo mas cerca a los poblacionales
+tab$est.better = t(matrix(unlist(k$dif.min),nrow=3))
+colnames(tab$est.better)<-c("a","b","c")
+tab$est.better= cbind(dataset.models,dataset.items,dataset.individuals,tab$est.better)
+tab$est.better.count$a=table(unlist(tab$est.better[5:12,4]))
+tab$est.better.count$b=table(unlist(tab$est.better[5:12,5]))
+tab$est.better.count$c=table(unlist(tab$est.better[9:12,6]))
+
+##Diferencias medias en convergencia
+
+tab$mean.dif.irtpp=t(matrix(unlist(k$mean.dif.irtpp),nrow=3))
+colnames(tab$mean.dif.irtpp)<-c("irtpp-a","irtpp-b","irtpp-c");
+tab$mean.dif.mirt=t(matrix(unlist(k$mean.dif.mirt),nrow=3))
+colnames(tab$mean.dif.mirt)<-c("mirt-a","mirt-b","mirt-c");
+tab$mean.dif=cbind(dataset.models,dataset.items,dataset.individuals,tab$mean.dif.mirt,tab$mean.dif.irtpp)
+
+tab
+}
 
 report.from.reduced<-function(path){
-  files=list.files(dir)
+  files=list.files(path)
   all=NULL;
   dset.n = length(files)
   #i=1
@@ -19,12 +128,16 @@ report.from.reduced<-function(path){
     ret=NULL;
     file = paste0(path,"/",files[[i]])
     print(file)
+    
+    print(files)
+    
     obj = load(file = file)
     obj <- get(obj)
     if(is.null(obj$speedup)){
       break;
     }
     all$speedup[[i]] = obj$speedup
+    all$ll.all[[i]] = obj$ll.all
     all$ll.max[[i]] = list(obj$ll.max)
     all$ll.mean[[i]] = obj$ll.mean
     all$dif.min[[i]] = obj$dif.min
@@ -39,8 +152,8 @@ report.from.reduced<-function(path){
 
 
 ###First the reduce step and what we gotta get.
-path = "/home/liberato/irtpptest/dataoutput/";
-reduce.all(path)
+#path = "/home/liberato/irtpptest/dataoutput/";
+#reduce.all(path)
 
 
 reduce.all<-function(path,verbose=T){
@@ -94,6 +207,8 @@ reduce.dir<-function(path,verbose=T){
   ll.irtpp.map =NULL;
   ll.mirt.eap =NULL;
   ll.mirt.map =NULL;
+  
+  
   est.poblational = NULL;
   ##Extraction
   #One for the while
@@ -157,6 +272,7 @@ reduce.dir<-function(path,verbose=T){
   speedup.deviations = c(sd(time.mirt),sd(time.irtpp),sd(time.mirt.eap),sd(time.mirt.map),sd(time.irtpp.eap),sd(time.irtpp.map))
   names(speedup.deviations)<-c("mirt","irtpp","m-eap","m-map","i-eap","i-map");
   time.means = list(time.mirt,time.irtpp,time.mirt.eap,time.mirt.map,time.irtpp.eap,time.irtpp.map)
+  time.means = lapply(time.means,mean)
   names(time.means)<-c("mirt","irtpp","m-eap","m-map","i-eap","i-map");
   speedup.zita = time.mirt/time.irtpp
   speedup.eap = time.mirt.eap/time.irtpp.eap
@@ -165,7 +281,8 @@ reduce.dir<-function(path,verbose=T){
   speedup = lapply(speedup,mean)
   speedup = as.list(speedup)
   names(speedup) <- c("estimation","eap","map")
-  speedup$deviations = speedup.deviations
+  speedup$time.deviations = speedup.deviations
+  speedup$time.means = time.means
   ret$speedup=speedup;
   
   
@@ -176,6 +293,7 @@ reduce.dir<-function(path,verbose=T){
   ll.table$ll.mirt.eap=ll.mirt.eap
   ll.table$ll.irtpp.map=ll.irtpp.map
   ll.table$ll.mirt.map=ll.mirt.map
+  ret$ll.all = ll.table
   ll.summary=lapply(ll.table,summary)
   ##Mean and median
   ll.mean=lapply(ll.summary,function(x)x[[3]])
@@ -194,6 +312,7 @@ reduce.dir<-function(path,verbose=T){
   ll.max = table(unlist(ll.max))
   reps.n = dim(ll.matrix)[1]
   ll.max=ll.max/reps.n
+  
   
   ret$ll.max = ll.max
   ret$ll.mean = ll.mean
