@@ -9,7 +9,7 @@ scenario.insert <- function(scenarios,connection=mongo,db="test",collection="sce
   scenarios$s_function = as.character(scenarios$s_function)
   scenarios$s_status = as.character(scenarios$s_status)
   scenarios$s_rand = runif(nrow(scenarios))
-  s_count = 0
+  s_count = 1
   scenarios = cbind.data.frame(scenarios,s_count)
   
   scenarios.list=lapply(split(scenarios,seq_along(scenarios[,1])),as.list)
@@ -22,7 +22,8 @@ scenario.insert <- function(scenarios,connection=mongo,db="test",collection="sce
   ret
 }
 
-
+#connection=mongo;db="irtpptest";scenario.collection="scenarios";out.collection="out"
+#library(rmongodbHelper)
 scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenarios",out.collection="out"){
   ###Search for not ran scenarios
   repeat{
@@ -43,6 +44,8 @@ scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenari
     break
   }
   element = mongo.bson.to.list(element)  
+  
+  
   
   func = element$s_function
   argnames=names(formals(func))  
@@ -66,9 +69,15 @@ scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenari
   evalout$s_rep = element$s_count 
   #Increase the count
   newobj = '{ "$inc" : { "s_count" : 1}}'
+  #evalout = mongo.bson.from.list(evalout);
+  #print(evalout)
   
   mongo.update(connection,ns=scenario_c,criteria=criteria,objNew=newobj)
   #Save in db
-  mongo.insert(connection,out_c,evalout)}
+  evalout[names(element)] = element
+  evalout["_id"] = NULL
+  err = mongo.insert(connection,out_c,mongo.bson.from.JSON(toJSON(evalout)))
+  print.sentence("err : ",err);
+  }
   }
 }
