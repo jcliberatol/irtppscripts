@@ -1,2 +1,29 @@
 README
 
+to set up the scenarios , create a dataframe with the needed scenarios as follows.
+
+items = c(20, 50, 100)
+individuals = 1000
+s_reps = 200
+s_function = rep(c("f_mirt","f_sics"),3)
+
+scenarios = cbind.data.frame(items,individuals,s_reps,s_function)
+
+outputs : 
+
+  items individuals s_reps s_function
+1    20        1000    200     f_mirt
+2    50        1000    200     f_sics
+3   100        1000    200     f_mirt
+4    20        1000    200     f_sics
+5    50        1000    200     f_mirt
+6   100        1000    200     f_sics
+
+put this code in initialization.R and run with Rscript
+
+
+
+In auxfunc.R put the code of the functions specified in s_function.
+
+then you can do 
+./runtest.sh to start or continue running the tests.
