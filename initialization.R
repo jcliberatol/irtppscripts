@@ -5,9 +5,9 @@ library(IRTpp)
 #items = c(20, 50, 100)
 #individuals = c(1000,10000,100000)
 models = c("1PL","2PL","3PL")
-items = c(20,50)
+items = c(20,50,100)
 individuals = c(1000,10000)
-s_reps = 10
+s_reps = 200
 s_function = c("f_mirt","f_sics")
 
 scn = do.call(rbind,lapply(models,function(model)cbind(items,model)))
@@ -47,5 +47,5 @@ library(rmongodb)
 mongo = mongo.create(host = "localhost",db="irtpptest")
 mongo.is.connected(mongo)
 ##Load the mongo file
-source(file="/home//liberato/git/irtppscripts/mongo.R")
+source(file="/home//mirt/git/irtppscripts/mongo.R")
 scenario.insert(connection=mongo,scenarios,db="irtpptest")
