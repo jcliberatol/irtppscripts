@@ -31,6 +31,7 @@ toMongo<-function(what,where){
   err
 }
 
+model="1PL"
 
 f_sics<-function(model,items,individuals,s_count){
   test = list(model=model,items=items,individuals=individuals)
@@ -41,8 +42,7 @@ f_sics<-function(model,items,individuals,s_count){
   if(!mongo.is.connected(mongo)){
     stop("turn on mongodb please")
   }
-  where = list(mongo=mongo,collection="irtpptest.test")
-  #test = test_from_mongo(test,where)
+
   #testfile = paste0("/home/irtpp/datasets/","t",model,"x",individuals,"x",items,"r",s_count,".csv")
   
   testfile = paste0("/home/irtpp/datasets/","test",model,"x",individuals,"x",items,"x",s_count,".rds")

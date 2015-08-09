@@ -159,13 +159,4 @@ initialize(scn)
 
 
 
-<<<<<<< HEAD
-=======
-scenarios
-library(rmongodb)
-mongo = mongo.create(host = "localhost",db="irtpptest")
-mongo.is.connected(mongo)
-##Load the mongo file
-source(file="/home//mirt/git/irtppscripts/mongo.R")
-scenario.insert(connection=mongo,scenarios,db="irtpptest")
->>>>>>> 24a4c898b5669af695160317636bd15342b8e140
+
