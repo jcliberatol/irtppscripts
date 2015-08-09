@@ -136,7 +136,7 @@ initialize<-function(scn){
 }
 
 ##############Test Scenario 2 estimations (not so many scenarios, estimations) 
-models = c("3PL")
+models = c("1PL","2PL")
 items = c(10,20,50,100,200)
 individuals = c(1000,2000,5000,10000,20000)
 s_reps = 100
@@ -157,7 +157,6 @@ scn$individuals = as.numeric(as.character(scn$individuals))
 scn = scn[order(scn$individuals,scn$items),]
 
 initialize(scn)
-
 
 
 
