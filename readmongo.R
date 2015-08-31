@@ -23,6 +23,87 @@ f1 <- function(record){
   df
 }
 
+library(IRTpp)
+df.names2 = c("items","inds","func","model","rep")
+f2 <- function(record){
+  df = list(record$items,
+            record$individuals,
+            record$s_function,
+            record$model,
+            record$s_count
+  );
+  names(df) = df.names2
+  df = unlist(df)
+  df2 = parameter.matrix(record$est_items)
+  df2 = unlist(df2)
+  items = nrow(df2)
+  item = 1:items
+  df2 = data.frame(df2);
+  names(df2) = c("a","b","c");
+  df2=cbind.data.frame(df2,item)
+  df=rep(df,items)
+  df = matrix(df,ncol = 5,byrow = T)
+  df = data.frame(df);
+  names(df) = df.names2;
+  df = cbind.data.frame(df,df2)
+  df
+}
+
+f3 <- function(record){
+  df = list(record$eap,
+            record$map);
+  names(df) = c("eap","map")
+  df
+}
+
+nrow(v[[2]][[2]])
+
+query_itempars = function(query){
+  if(is.list(query)){
+    query=mongo.bson.from.list(query)}
+  else{
+    stop("wrong query")
+  }
+  k = mongo.find.all(mongo,"irtpptest.out",query=query)
+  rk=lapply(k,f2)
+  rk = do.call(rbind.data.frame,rk)
+}
+
+query_traits = function(query){
+  if(is.list(query)){
+    query=mongo.bson.from.list(query)}
+  else{
+    stop("wrong query")
+  }
+  k = mongo.find.all(mongo,"irtpptest.out",query=query)
+  rk=lapply(k,f3)
+  rk
+}
+
+
+v=query_traits(list("model"="3PL","items"=10,"s_function"="f_mirt"))
+Reduce(x = v, function(x){
+  
+})
+
+lapply
+library(mirt)
+mirt
+mean(v[[100]]$map)
+
+function(x,y){
+  x$
+}
+Reduce("+",1:100)
+
+v = query_itempars(list("model"="3PL","items"=10,"s_count"=1))
+
+
+saveRDS(v,"estimaciones.RDS")
+v
+
+s = load("/home/irtpp/itempars/itempars1PLx10000x100.RData")
+s = get(s)
 ## Query to df function , makes a query and converts it to a data frame.
 query_to_df=function(query){
   if(is.list(query)){
@@ -85,6 +166,11 @@ heatmap200=function(h){
 
 ### Make the proportion plots
 ## Query the database for mirt and sics
+
+df = query_to_df(list())
+df
+saveRDS(df,"pruebas.RDS")
+getwd()
 df.m = query_to_df(list("s_function"="f_mirt"))
 df.s = query_to_df(list("s_function"="f_sics"))
 

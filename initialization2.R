@@ -1,5 +1,13 @@
+
 library(IRTpp)
+
+
+print.sentence<-function(...,sep=" ",verbose=T){
+  if(verbose){print(paste(sep=sep,...))}
+}
 ##Functions
+
+
 scenario.insert <- function(scenarios,connection=mongo,db="test",collection="scenarios"){
   s_status = "notrun"
   scenarios=cbind.data.frame(scenarios,s_status)
@@ -8,9 +16,9 @@ scenario.insert <- function(scenarios,connection=mongo,db="test",collection="sce
   scenarios$s_rand = runif(nrow(scenarios))
   s_count = 1
   scenarios = cbind.data.frame(scenarios,s_count)
-  
+
   scenarios.list=lapply(split(scenarios,seq_along(scenarios[,1])),as.list)
-  
+
   ret=lapply(scenarios.list,function(x){
     k = mongo.bson.from.list(x)
     mongo.insert(connection,
@@ -21,10 +29,10 @@ scenario.insert <- function(scenarios,connection=mongo,db="test",collection="sce
 
 library(rmongodb)
 if(!exists("mongo")){
-  mongo = mongo.create(host = "localhost",db="irtpptest") 
+  mongo = mongo.create(host = "localhost",db="irtpptest")
 }
 if(!mongo.is.connected(mongo)){
-  mongo = mongo.create(host = "localhost",db="irtpptest")  
+  mongo = mongo.create(host = "localhost",db="irtpptest")
 }
 
 test_from_mongo<-function(test,where)
@@ -56,17 +64,17 @@ toMongo<-function(what,where){
 # Create the itempars files and test files for both irtpp and mirt.
 
 initialize<-function(scn){
-  
   criteria=list("name"="rep")
   objNew=list("name"="rep","value"=1)
   mongo.update(mongo,ns="irtpptest.global",criteria,objNew,mongo.update.upsert)
-  
+
   for(i in 1:nrow(scn))
   {
-    
+
     savefile = paste0("/home/irtpp/itempars/","itempars",scn$model[i],"x",scn$individuals[i],"x",
                       scn$items[i],".RData");
     if(!file.exists(savefile)){
+      print.sentence("File ",savefile," Does not exist")
       itempars = simulateItemParameters(item=scn$items[i],model=scn$model[i])
       save(itempars,file=savefile);
       print.sentence("Creating file : ",savefile)
@@ -76,22 +84,23 @@ initialize<-function(scn){
       itempars = get(pars)
       print.sentence("Using existing file : ",savefile)
     }
-    
+
     savefile2 = paste0("/home/irtpp/itempars/","traits",scn$model[i],"x",scn$individuals[i],"x",
                        scn$items[i],".RData");
     if(!file.exists(savefile2)){
       th=rnorm(scn$individuals[i],0,1)
       th=(th-mean(th))/sd(th)
-      save(th,file=savefile2);
       print.sentence("Creating file : ",savefile2)
+      save(th,file=savefile2);
     }
     else {
+      print.sentence("Using existing file : ",savefile2)
       pars = load(savefile2)
       th = get(pars)
-      print.sentence("Using existing file : ",savefile2)
+
     }
-    
-    
+
+
     for (j in 1:scn$s_reps[[i]]){
       savefile = paste0("/home/irtpp/datasets/","test",scn$model[i],"x",scn$individuals[i],"x",
                         scn$items[i],"x",j,".rds");
@@ -103,18 +112,18 @@ initialize<-function(scn){
                             seed = j,
                             threshold=0.02,
                             latentTraits=th)
-        test$t_rep = j; 
+        test$t_rep = j;
         tm = proc.time()
         saveRDS(test,file=savefile)
         tm = proc.time() - tm
         print.sentence("Created file : ",savefile," in :", tm[3], "s")
       }
-      
+
       else{
         print.sentence("File : ",savefile," already exists")
       }
     }
-    
+
     q = mongo.bson.from.list(scn[i,])
     qr = mongo.findOne(mongo=mongo,ns="irtpptest.scenarios",q)
     if(is.null(qr)){
@@ -130,17 +139,17 @@ initialize<-function(scn){
       print.sentence("Scenario already existant in database")
       print.data.frame(scn[i,])
     }
-    
+
   }
-  
+
 }
 
-##############Test Scenario 2 estimations (not so many scenarios, estimations) 
-models = c("3PL")
-items = c(10,20,50,100,200)
-individuals = c(1000,2000,5000,10000,20000)
-s_reps = 100
-s_function = c("f_mirt","f_sics")
+##############Test Scenario 2 estimations (not so many scenarios, estimations)
+models = c("1PL","2PL","3PL")
+items = c(100,200)
+individuals = c(10000,20000)
+s_reps = 101
+s_function = c("f_sics","f_mirt")
 
 scn=cbind(items,individuals)
 
@@ -157,9 +166,3 @@ scn$individuals = as.numeric(as.character(scn$individuals))
 scn = scn[order(scn$individuals,scn$items),]
 
 initialize(scn)
-
-
-
-
-
-
