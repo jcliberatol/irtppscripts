@@ -185,7 +185,7 @@ scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenari
     print.sentence("Repetition : ",c_rep$value)
     scenario_c = paste0(db,".",scenario.collection)
     out_c = paste0(db,".",out.collection)
-    query1 = paste0('{"s_status" : "notrun",  "s_count" : ',c_rep$value,'}')
+    query1 = paste0('{"s_status" : "notrun",  "s_count" : ',c_rep$value,' , "s_function" : "f_mirt"}')
     element = mongo.findOne(connection,scenario_c,query1)
     if (is.null(element)){
       c_rep$value=c_rep$value+1;
