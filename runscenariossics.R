@@ -193,7 +193,7 @@ scenarios.run<- function(connection=mongo,db="test",scenario.collection="scenari
     }
     element = mongo.findOne(connection,scenario_c,query1)
     if (is.null(element)){
-      query1 = paste0('{"s_status" : "notrun" }')
+      query1 = paste0('{"s_status" : "notrun" , "s_function" : "f_sics" }')
       element = mongo.findOne(connection,scenario_c,query1)
       if(is.null(element)){
         print("I'm done")
